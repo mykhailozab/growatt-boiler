@@ -1,0 +1,35 @@
+name: Growatt Boiler Control
+ 
+on:
+  repository_dispatch:
+    types: [trigger_boiler]
+  workflow_dispatch:
+ 
+jobs:
+  control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3   # если Growatt зависнет, не жжём бесплатные минуты
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+ 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+ 
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install growattServer tinytuya
+ 
+      - name: Run script
+        env:
+          PYTHONUNBUFFERED: "1"   # логи идут в правильном порядке
+          GROWATT_USER: ${{ secrets.GROWATT_USER }}
+          GROWATT_PASS: ${{ secrets.GROWATT_PASS }}
+          TUYA_CLIENT_ID: ${{ secrets.TUYA_CLIENT_ID }}
+          TUYA_SECRET: ${{ secrets.TUYA_SECRET }}
+          TUYA_DEVICE_ID: ${{ secrets.TUYA_DEVICE_ID }}
+          TUYA_REGION: ${{ secrets.TUYA_REGION }}
+        run: python main.py
